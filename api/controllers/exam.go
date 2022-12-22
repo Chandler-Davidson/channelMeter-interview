@@ -19,7 +19,7 @@ func (ctrl ExamController) GetExam(c *gin.Context) {
 	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
 
 	if err != nil {
-		c.JSON(400, nil)
+		c.AbortWithError(400, err)
 		return
 	}
 

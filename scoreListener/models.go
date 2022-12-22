@@ -14,23 +14,20 @@ type ScoreEvent struct {
 type Student struct {
 	StudentId string
 	Average   float64
-	Exams     []StudentExamScore
-}
-
-type StudentExamScore struct {
-	Id    int64
-	Score float64
+	Exams     []ExamScore
 }
 
 type ExamScore struct {
+	ExamId int64
+	Score  float64
+}
+
+type StudentScore struct {
 	StudentId string
 	Score     float64
 }
 
 type Exam struct {
-	Scores  []ExamScore
+	Scores  []StudentScore
 	Average float64
 }
-
-type StudentToExamsMap = map[string][]StudentExamScore
-type ExamToScoresMap = map[int64][]ExamScore

@@ -16,5 +16,11 @@ func (ctrl StudentController) GetStudents(c *gin.Context) {
 
 func (ctrl StudentController) GetStudent(c *gin.Context) {
 	id := c.Param("id")
-	c.JSON(200, ctrl.ScoreRepo.GetStudentScores(id))
+	student := ctrl.ScoreRepo.GetStudentScores(id)
+
+	if len(student.StudentId) == 0 {
+		c.AbortWithStatus(400)
+	}
+
+	c.JSON(200, student)
 }

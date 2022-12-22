@@ -7,6 +7,9 @@ type ScoreRepository interface {
 	GetExam(examId int64) Exam
 }
 
+type StudentToExamsMap = map[string][]ExamScore
+type ExamToScoresMap = map[int64][]StudentScore
+
 type MemoryScoreRepository struct {
 	StudentToExams StudentToExamsMap
 	ExamToScores   ExamToScoresMap
@@ -14,8 +17,8 @@ type MemoryScoreRepository struct {
 
 func NewScoreRepository() MemoryScoreRepository {
 	store := MemoryScoreRepository{
-		make(map[string][]StudentExamScore),
-		make(map[int64][]ExamScore)}
+		make(map[string][]ExamScore),
+		make(map[int64][]StudentScore)}
 
 	channel := make(chan ScoreEvent)
 	go Subscribe(channel)
@@ -29,10 +32,10 @@ func fillData(store MemoryScoreRepository, channel chan ScoreEvent) {
 		score := <-channel
 		studentId := score.StudentId
 
-		exam := StudentExamScore{score.ExamId, score.Score}
+		exam := ExamScore{score.ExamId, score.Score}
 		store.StudentToExams[studentId] = append(store.StudentToExams[studentId], exam)
 
-		studentScore := ExamScore{studentId, score.Score}
+		studentScore := StudentScore{studentId, score.Score}
 		store.ExamToScores[score.ExamId] = append(store.ExamToScores[score.ExamId], studentScore)
 	}
 }
@@ -56,23 +59,35 @@ func (store *MemoryScoreRepository) GetExams() []int64 {
 }
 
 func (store *MemoryScoreRepository) GetStudentScores(studentId string) Student {
+	student := store.StudentToExams[studentId]
+
+	if student == nil {
+		return Student{}
+	}
+
 	total := 0.0
 
-	for _, e := range store.StudentToExams[studentId] {
+	for _, e := range student {
 		total += e.Score
 	}
 
-	average := total / float64(len(store.StudentToExams[studentId]))
-	return Student{studentId, average, store.StudentToExams[studentId]}
+	average := total / float64(len(student))
+	return Student{studentId, average, student}
 }
 
 func (store *MemoryScoreRepository) GetExam(examId int64) Exam {
+	exam := store.ExamToScores[examId]
+
+	if exam == nil {
+		return Exam{}
+	}
+
 	total := 0.0
 
-	for _, e := range store.ExamToScores[examId] {
+	for _, e := range exam {
 		total += e.Score
 	}
 
-	average := total / float64(len(store.ExamToScores[examId]))
-	return Exam{store.ExamToScores[examId], average}
+	average := total / float64(len(exam))
+	return Exam{exam, average}
 }
