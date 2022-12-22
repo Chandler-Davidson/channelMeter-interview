@@ -1,4 +1,4 @@
-module channelMeter/scores
+module channelMeter
 
 go 1.19
 
